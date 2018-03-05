@@ -12,19 +12,27 @@ oltt_lst <- lapply(X = dirs_list, function(x) { # x is folder name: 1035, 1036 .
   data_row <- c(as.numeric(x), rep(NA, 8))
   for (file in file_list) {
     if (grepl(pattern = "Cued Recall", x = file)) {
-      cr <- readr::read_csv(file.path("OLTT Data", x, file), na = "", trim_ws = TRUE, skip = 4, col_names = TRUE)
+      cr <- suppressWarnings(readr::read_csv(file.path("OLTT Data", x, file), na = "", 
+                            trim_ws = TRUE, skip = 4, col_names = TRUE,
+                            col_type = readr::cols()))
       data_row[6] <- cr[nrow(cr), "avg error cm"]
       data_row[7] <- cr[nrow(cr), "average time"]
     } else if (grepl(patter = "dottest", x = file)) {
-      dot <- readr::read_csv(file.path("OLTT Data", x, file), na = "", trim_ws = TRUE, skip = 4, col_names = TRUE)
+      dot <- suppressWarnings(readr::read_csv(file.path("OLTT Data", x, file), na = "", 
+                             trim_ws = TRUE, skip = 4, col_names = TRUE,
+                             col_type = readr::cols()))
       data_row[2] <- dot[nrow(dot), "avg error cm"]
       data_row[3] <- dot[nrow(dot), "average time"]
     } else if (grepl(pattern = "Free Recall", x = file)) {
-      fr <- readr::read_csv(file.path("OLTT Data", x, file), na = "", trim_ws = TRUE, skip = 4, col_names = TRUE)
+      fr <- suppressWarnings(readr::read_csv(file.path("OLTT Data", x, file), na = "", 
+                            trim_ws = TRUE, skip = 4, col_names = TRUE,
+                            col_type = readr::cols()))
       data_row[4] <- fr[nrow(fr), "avg error cm"]
       data_row[5] <- fr[nrow(fr), "average time"]
     } else if (grepl(pattern = "Recognition", x = file)) {
-      rec <- readr::read_csv(file.path("OLTT Data", x, file), na = "", trim_ws = TRUE, skip = 4, col_names = TRUE)
+      rec <- suppressWarnings(readr::read_csv(file.path("OLTT Data", x, file), na = "", 
+                             trim_ws = TRUE, skip = 4, col_names = TRUE,
+                             col_type = readr::cols()))
       data_row[8] <- rec[nrow(rec), "total correct"]
       data_row[9] <- rec[nrow(rec), "avg time"]
     }
@@ -36,11 +44,11 @@ oltt_df <- do.call(rbind, oltt_lst)
 # name the columns/fields to match REDCap
 names(oltt_df) <- c("UDS_ID", "dot_cal_aerr", "dot_cal_at", "fr_aerr", "fr_at", 
                     "cr_aerr", "cr_at", "rt_correct", "ra_time")
-names(oltt_df)
+# names(oltt_df)
 
 # convert "NA" strings to real NAs
 oltt_df[oltt_df == "NA"] <- NA
-oltt_df
+# oltt_df
 
 # make sure each column is numeric
 oltt_df <- lapply(oltt_df, as.numeric)
@@ -48,5 +56,9 @@ oltt_df <- lapply(oltt_df, as.numeric)
 oltt_df <- data.frame(oltt_df)
 # class(oltt_df) 
 # class(oltt_df$dot_cal_aerr)
-oltt_df
+# oltt_df
+
+# sapply(X = names(oltt_df), FUN = function(x) hist(oltt_df[, x], main = x, xlab = ""))
+
+write.csv(oltt_df, "oltt_scraped_data.csv", row.names = FALSE, na = "")
        
