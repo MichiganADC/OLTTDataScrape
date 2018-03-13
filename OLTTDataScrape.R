@@ -42,7 +42,7 @@ oltt_lst <- lapply(X = dirs_list, function(x) { # x is folder name: 1035, 1036 .
 # flatten the list of returned data frames
 oltt_df <- do.call(rbind, oltt_lst)
 # name the columns/fields to match REDCap
-names(oltt_df) <- c("UDS_ID", "dot_cal_aerr", "dot_cal_at", "fr_aerr", "fr_at", 
+names(oltt_df) <- c("ptid", "dot_cal_aerr", "dot_cal_at", "fr_aerr", "fr_at", 
                     "cr_aerr", "cr_at", "rt_correct", "ra_time")
 # names(oltt_df)
 
@@ -59,10 +59,10 @@ oltt_df <- data.frame(oltt_df)
 # oltt_df
 library(dplyr)
 oltt_df <- oltt_df %>% 
-  mutate(redcap_event_name = if_else(UDS_ID <= 1041, "visit_2_arm_1",
-                                     ifelse(UDS_ID >= 1042, "visit_1_arm_1", NA))) %>% 
-  mutate(UDS_ID = paste0("UM0000", UDS_ID)) %>% 
-  select(UDS_ID, redcap_event_name, everything())
+  mutate(redcap_event_name = if_else(ptid <= 1041, "visit_2_arm_1",
+                                     ifelse(ptid >= 1042, "visit_1_arm_1", NA))) %>% 
+  mutate(ptid = paste0("UM0000", ptid)) %>% 
+  select(ptid, redcap_event_name, everything())
 
 # sapply(X = names(oltt_df), FUN = function(x) hist(oltt_df[, x], main = x, xlab = ""))
 
