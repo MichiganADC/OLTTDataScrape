@@ -57,6 +57,12 @@ oltt_df <- data.frame(oltt_df)
 # class(oltt_df) 
 # class(oltt_df$dot_cal_aerr)
 # oltt_df
+library(dplyr)
+oltt_df <- oltt_df %>% 
+  mutate(redcap_event_name = if_else(UDS_ID <= 1041, "visit_2_arm_1",
+                                     ifelse(UDS_ID >= 1042, "visit_1_arm_1", NA))) %>% 
+  mutate(UDS_ID = paste0("UM0000", UDS_ID)) %>% 
+  select(UDS_ID, redcap_event_name, everything())
 
 # sapply(X = names(oltt_df), FUN = function(x) hist(oltt_df[, x], main = x, xlab = ""))
 
