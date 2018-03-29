@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
 
-# get all directories
-dirs_list <- list.dirs(path = "./OLTT Data", recursive = FALSE, full.names = FALSE)
-# dirs_list
-# file.path("./OLTT Data", dirs_list)
+library(dplyr)
 
-# for each directory, get the list of files in that directory,
-# then pull specific data out of each kind of csv
+## Get all directories
+dirs_list <- list.dirs(path = "./OLTT Data", recursive = FALSE, full.names = FALSE)
+
+## For each directory, get the list of files in that directory,
+## ... then pull specific data out of each kind of csv
 oltt_lst <- lapply(X = dirs_list, function(x) { # x is folder name: 1035, 1036 ... 1448, 1449
   file_list = list.files(file.path("OLTT Data", x))
   data_row <- c(as.numeric(x), rep(NA, 8))
@@ -39,30 +39,39 @@ oltt_lst <- lapply(X = dirs_list, function(x) { # x is folder name: 1035, 1036 .
   }
   data.frame(matrix(data_row, nrow = 1, byrow = TRUE))
 })
-# flatten the list of returned data frames
+
+## Flatten the list of returned data frames
 oltt_df <- do.call(rbind, oltt_lst)
-# name the columns/fields to match REDCap
+
+## Name the columns/fields to match REDCap
 names(oltt_df) <- c("ptid", "dot_cal_aerr", "dot_cal_at", "fr_aerr", "fr_at", 
                     "cr_aerr", "cr_at", "rt_correct", "ra_time")
 # names(oltt_df)
 
-# convert "NA" strings to real NAs
+## Convert "NA" strings to real NAs
 oltt_df[oltt_df == "NA"] <- NA
-# oltt_df
 
-# make sure each column is numeric
+## Make sure each column is numeric
 oltt_df <- lapply(oltt_df, as.numeric)
-# convert oltt_df back to data frame (lapply makes it a list)
+
+## Convert oltt_df back to data frame (lapply makes it a list)
 oltt_df <- data.frame(oltt_df)
-# class(oltt_df) 
-# class(oltt_df$dot_cal_aerr)
-# oltt_df
-library(dplyr)
+
 oltt_df <- oltt_df %>% 
   mutate(redcap_event_name = if_else(ptid <= 1041, "visit_2_arm_1",
                                      ifelse(ptid >= 1042, "visit_1_arm_1", NA))) %>% 
   mutate(ptid = paste0("UM0000", ptid)) %>% 
   select(ptid, redcap_event_name, everything())
+
+## Add `oltt_complete` field; 
+## ... if all values aren't NA, 2 for "complete"
+## ... else, 0 for "incomplete"
+oltt_df <- oltt_df %>% 
+  mutate(oltt_complete = ifelse(!is.na(ptid) & !is.na(redcap_event_name) & 
+                                  !is.na(dot_cal_aerr) & !is.na(dot_cal_at) &
+                                  !is.na(fr_aerr)      & !is.na(fr_at) &
+                                  !is.na(cr_aerr)      & !is.na(cr_at) &
+                                  !is.na(rt_correct)   & !is.na(ra_time), 2, 0))
 
 # sapply(X = names(oltt_df), FUN = function(x) hist(oltt_df[, x], main = x, xlab = ""))
 
