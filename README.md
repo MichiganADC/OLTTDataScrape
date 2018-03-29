@@ -16,11 +16,15 @@ The repository for this script can be found at [https://github.com/MichiganADC/O
 
 3. Navigate to the directory containing the `OLTTDataScrape.R` file.
 
-    a. In Mac OS X, you would currently type this command:  ```cd /Volumes/Neuro_Shared/ClinicalCore/OLTT/```
+    a. In Mac OS X, you would currently type this command:  
+    
+    ```cd /Volumes/Neuro_Shared/ClinicalCore/OLTT/```
 
 4. Run the `OLTTDataScrape.R` script.
 
-    a. In Mac OS X or Linux, type this command: ```./OLTTDataScrape.R```
+    a. In Mac OS X or Linux, type this command: 
+    
+    ```./OLTTDataScrape.R```
 
 Depending on how many OLTT data files there are to scrape, the script may take a few seconds to execute.
 
