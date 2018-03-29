@@ -1,6 +1,9 @@
 # OLTTDataScrape
 Script to collect OLTT data for upload to REDCap
 
+## GitHub repository
+The repository for this script can be found at [https://github.com/MichiganADC/OLTTDataScrape](https://github.com/MichiganADC/OLTTDataScrape).
+
 ## Running the script in Mac OS X or Linux
 
 1. If necessary, copy the `OLTTDataScrape.R` file to the directory that contains the **OLTT Data** directory.
