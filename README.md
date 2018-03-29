@@ -8,6 +8,10 @@ The repository for this script can be found at [https://github.com/MichiganADC/O
 
 1. If necessary, copy the `OLTTDataScrape.R` file to the directory that contains the **OLTT Data** directory.
 
+2. Make sure `OLTTDataScrape.R` is executable by running this command:
+
+    ```chmod 744 OLTTDataScrape.R```
+
 2. Open a terminal.
 
 3. Navigate to the directory containing the `OLTTDataScrape.R` file.
