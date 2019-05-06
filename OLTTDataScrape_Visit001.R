@@ -2,14 +2,145 @@
 
 library(dplyr)
 
+
+# **** ----
+# USEFUL VARS ----
+source("~/Box Sync/Documents/R_helpers/config.R")
+source("~/Box Sync/Documents/R_helpers/helpers.R")
+
+
 ## Get all directories
 dir_path <- "./OLTT Data/Visit 001/"
 dirs_list <- list.dirs(path = dir_path, recursive = FALSE, full.names = FALSE)
 dirs_list <- dirs_list[grepl(pattern = "^\\d{3,}$", x = dirs_list)]
 
+
+## Get IDs of those folks who've already been entered in REDCap
+records_raw <- dirs_list %>% 
+  paste0("UM", strrep("0", 8 - nchar(.)), .)
+records_raw_oldcohort <- records_raw[records_raw <= "UM00001041"]
+records_raw_newcohort <- records_raw[records_raw > "UM00001041"]
+
+records_oldcohort <- records_raw_oldcohort %>% paste(collapse = ",")
+records_newcohort <- records_raw_newcohort %>% paste(collapse = ",")
+
+fields_iv_raw <-
+  c(
+    "ptid"
+    , "form_date"
+    , "header_complete"
+    , "ivp_a1_complete"
+    , "ivp_a2_complete"
+    , "ivp_a3_complete"
+    , "ivp_a4_complete"
+    , "ivp_a5_complete"
+    , "ivp_b1_complete"
+    , "ivp_b4_complete"
+    , "ivp_b5_complete"
+    , "ivp_b6_complete"
+    , "ivp_b7_complete"
+    , "ivp_b8_complete"
+    , "ivp_b9_complete"
+    , "ivp_c2_complete"
+    , "ivp_d1_complete"
+    , "ivp_d2_complete"
+  )
+fields_iv <- fields_iv_raw %>% paste(collapse = ",")
+
+fields_fv_raw <- 
+  c(
+    "ptid"
+    , "form_date"
+    , "header_complete"
+    , "fvp_a1_complete"
+    , "fvp_a2_complete"
+    , "fvp_a3_complete"
+    , "fvp_a4_complete"
+    , "fvp_a5_complete"
+    , "fvp_b1_complete"
+    , "fvp_b4_complete"
+    , "fvp_b5_complete"
+    , "fvp_b6_complete"
+    , "fvp_b7_complete"
+    , "fvp_b8_complete"
+    , "fvp_b9_complete"
+    , "fvp_c1_complete"
+    , "fvp_c2_complete"
+    , "fvp_d1_complete"
+    , "fvp_d2_complete"
+  )
+fields_fv <- fields_fv_raw %>% paste(collapse = ",")
+
+json_u3_oldcohort <-
+  get_rc_data_api(uri     = REDCAP_API_URI,
+                  token   = REDCAP_API_TOKEN_UDS3n,
+                  fields  = fields_fv,
+                  records = records_oldcohort)
+json_u3_newcohort <-
+  get_rc_data_api(uri     = REDCAP_API_URI,
+                  token   = REDCAP_API_TOKEN_UDS3n,
+                  fields  = fields_iv,
+                  records = records_newcohort)
+
+df_u3_oldcohort <- jsonlite::fromJSON(json_u3_oldcohort %>% na_if(""))
+df_u3_newcohort <- jsonlite::fromJSON(json_u3_newcohort %>% na_if(""))
+
+df_u3_oldcohort_cln <- df_u3_oldcohort %>% 
+  filter(redcap_event_name == "visit_2_arm_1")
+df_u3_newcohort_cln <- df_u3_newcohort %>% 
+  filter(redcap_event_name == "visit_1_arm_1")
+
+df_u3_oldcohort_cln_cmp <- df_u3_oldcohort_cln %>% 
+  filter(header_complete == 2
+         , fvp_a1_complete == 2
+         , fvp_a2_complete == 2
+         , fvp_a3_complete == 2
+         , fvp_a4_complete == 2
+         # , fvp_a5_complete == 2
+         , fvp_b1_complete == 2
+         , fvp_b4_complete == 2
+         , fvp_b5_complete == 2
+         , fvp_b6_complete == 2
+         , fvp_b7_complete == 2
+         , fvp_b8_complete == 2
+         , fvp_b9_complete == 2
+         # , fvp_c1_complete == 2
+         # , fvp_c2_complete == 2
+         , fvp_d1_complete == 2
+         , fvp_d2_complete == 2)
+df_u3_newcohort_cln_cmp <- df_u3_newcohort_cln %>% 
+  filter(header_complete == 2
+         , ivp_a1_complete == 2
+         , ivp_a2_complete == 2
+         , ivp_a3_complete == 2
+         , ivp_a4_complete == 2
+         , ivp_a5_complete == 2
+         , ivp_b1_complete == 2
+         , ivp_b4_complete == 2
+         , ivp_b5_complete == 2
+         , ivp_b6_complete == 2
+         , ivp_b7_complete == 2
+         , ivp_b8_complete == 2
+         , ivp_b9_complete == 2
+         # , ivp_c2_complete == 2
+         , ivp_d1_complete == 2
+         , ivp_d2_complete == 2)
+
+df_u3_cln_cmp <- bind_rows(df_u3_oldcohort_cln_cmp, df_u3_newcohort_cln_cmp)
+
+records_cmp <- df_u3_cln_cmp %>% 
+  distinct(ptid) %>% 
+  pull() %>% 
+  stringr::str_extract("\\d{8}$") %>% 
+  as.integer() %>% 
+  as.character()
+
+dirs_list_fltr <- dirs_list[as.integer(dirs_list) %in% records_cmp]
+
+
 ## For each directory, get the list of files in that directory,
 ## ... then pull specific data out of each kind of csv
-oltt_lst <- lapply(X = dirs_list, function(x) { # x is folder name: 1035, 1036 ... 1448, 1449
+oltt_lst <- lapply(X = dirs_list_fltr, function(x) { # x is folder name: 1035, 1036 ... 1448, 1449
   file_list = list.files(file.path(dir_path, x))
   data_row <- c(as.numeric(x), rep(NA, 8))
   cat(paste("Processing", x, "...\n"))
@@ -61,9 +192,12 @@ oltt_df <- lapply(oltt_df, as.numeric)
 oltt_df <- data.frame(oltt_df)
 
 oltt_df <- oltt_df %>% 
-  mutate(redcap_event_name = if_else(ptid <= 1041, "visit_2_arm_1",
-                                     ifelse(ptid >= 1042, "visit_1_arm_1", NA))) %>% 
-  mutate(ptid = paste0("UM0000", ptid)) %>% 
+  mutate(ptid = paste0("UM", strrep(0, 8-nchar(ptid)), ptid)) %>% 
+  mutate(redcap_event_name = case_when(
+    ptid <= "UM00001041" ~ "visit_2_arm_1",
+    ptid >  "UM00001041" ~ "visit_1_arm_1",
+    TRUE ~ NA_character_
+  )) %>% 
   select(ptid, redcap_event_name, everything())
 
 ## Add `oltt_complete` field; 

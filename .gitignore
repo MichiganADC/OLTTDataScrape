@@ -5,6 +5,7 @@
 .Rapp.history
 .DS_Store
 *.csv
+*.tsv
 *.xls
 *.xlsx
 *.docx
