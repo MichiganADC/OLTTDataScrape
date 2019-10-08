@@ -5,8 +5,8 @@ suppressMessages(library(dplyr))
 
 # **** ----
 # USEFUL VARS ----
-source("~/Box Sync/Documents/R_helpers/config.R")
-source("~/Box Sync/Documents/R_helpers/helpers.R")
+source("~/Box/Documents/R_helpers/config.R")
+source("~/Box/Documents/R_helpers/helpers.R")
 
 
 ## Get all directories
